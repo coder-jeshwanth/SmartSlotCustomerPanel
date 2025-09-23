@@ -2,9 +2,10 @@
  * API service for SmartSlot booking system
  */
 
-// Use relative URL for proxied requests in development
-// Vite proxy will forward /api requests to http://localhost:5000/api
-const API_BASE_URL = '/api';
+// Use the appropriate API URL based on the environment
+const API_BASE_URL = import.meta.env.DEV 
+  ? '/api'  // Local development - will be handled by Vite proxy
+  : 'https://smart-slot-backend.vercel.app'; // Production
 
 /**
  * Fetch available dates with timings and booking status
@@ -50,7 +51,7 @@ export const fetchAvailableDatesWithTimings = async () => {
     // Provide more specific error messages
     if (error.name === 'TypeError') {
       if (error.message === 'Failed to fetch') {
-        throw new Error('Cannot connect to server. Please ensure your backend server is running on http://localhost:5000. The Vite proxy is configured but the backend is not responding.');
+        throw new Error('Cannot connect to server. The backend server at smart-slot-backend.vercel.app is not responding.');
       } else if (error.message.includes('NetworkError')) {
         throw new Error('Network error occurred. Check your internet connection and server status.');
       }
@@ -58,7 +59,7 @@ export const fetchAvailableDatesWithTimings = async () => {
     
     // Handle proxy/network errors
     if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
-      throw new Error('Backend server connection failed. Please start your backend server on http://localhost:5000 and try again.');
+      throw new Error('Backend server connection failed. The server at smart-slot-backend.vercel.app returned an error.');
     }
     
     throw error;

@@ -9,7 +9,8 @@ export default defineConfig({
       '/api': {
         target: 'https://smart-slot-backend.vercel.app',
         changeOrigin: true,
-        secure: false,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.log('proxy error', err);
