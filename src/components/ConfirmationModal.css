@@ -220,6 +220,14 @@
   word-break: break-word;
 }
 
+.detail-value.highlight {
+  font-size: 1.1em;
+  color: #2563eb;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+}
+
 .next-steps {
   margin-bottom: 24px;
 }

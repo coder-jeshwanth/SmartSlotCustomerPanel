@@ -8,7 +8,8 @@ const ConfirmationModal = ({
   selectedTime, 
   customerData, 
   onClose, 
-  show 
+  show,
+  bookingData 
 }) => {
   useEffect(() => {
     if (show) {
@@ -62,6 +63,15 @@ const ConfirmationModal = ({
           <h3>Booking Details</h3>
           
           <div className="detail-grid">
+            {bookingData && (
+              <div className="detail-item">
+                <div className="detail-content">
+                  <span className="detail-label">Booking Reference</span>
+                  <span className="detail-value highlight">{bookingData.bookingReference}</span>
+                </div>
+              </div>
+            )}
+
             <div className="detail-item">
               <Calendar size={20} className="detail-icon" />
               <div className="detail-content">

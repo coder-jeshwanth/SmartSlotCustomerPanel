@@ -1,12 +1,13 @@
 import React from 'react';
-import { formatTimeDisplay, generateTimeSlots } from '../utils/dateUtils';
+import { formatTimeDisplay } from '../utils/dateUtils';
 import './TimeSlots.css';
 
 const TimeSlots = ({ 
   selectedDate, 
   selectedTime, 
   onTimeSelect, 
-  getAvailableTimeSlots 
+  getAvailableTimeSlots,
+  getDateData 
 }) => {
   if (!selectedDate) {
     return (
@@ -20,7 +21,20 @@ const TimeSlots = ({
 
   const dateString = selectedDate.toISOString().split('T')[0];
   const availableSlots = getAvailableTimeSlots(dateString);
-  const allSlots = generateTimeSlots();
+  const dateData = getDateData(dateString);
+
+  if (!dateData) {
+    return (
+      <div className="time-slots-placeholder">
+        <div className="placeholder-icon">❌</div>
+        <h3>No Data Available</h3>
+        <p>No time slot data available for this date</p>
+      </div>
+    );
+  }
+
+  // Get all time slots for this date (both available and booked)
+  const allSlots = dateData.timeSlots.map(slot => slot.time);
 
   // Group slots by time periods for better organization
   const groupedSlots = {
@@ -64,7 +78,7 @@ const TimeSlots = ({
   };
 
   const renderTimeGroup = (title, slots, icon) => {
-    const groupSlots = slots.filter(slot => availableSlots.includes(slot) || !availableSlots.includes(slot));
+    const groupSlots = slots.filter(slot => allSlots.includes(slot));
     
     if (groupSlots.length === 0) return null;
 
@@ -108,7 +122,10 @@ const TimeSlots = ({
         <p className="selected-date-display">{selectedDateString}</p>
         <div className="slots-summary">
           <span className="total-available">
-            {availableSlots.length} slots available
+            {availableSlots.length} of {dateData.totalSlots} slots available
+          </span>
+          <span className="slot-duration">
+            {dateData.slotDuration} min duration
           </span>
         </div>
       </div>

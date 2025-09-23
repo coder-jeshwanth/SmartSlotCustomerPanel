@@ -150,6 +150,14 @@
   cursor: not-allowed;
 }
 
+.calendar-date.fully-booked {
+  background: linear-gradient(135deg, #feb2b2 0%, #fc8181 100%);
+  color: #742a2a;
+  cursor: not-allowed;
+  border-color: #fc8181;
+  box-shadow: 0 2px 8px rgba(252, 129, 129, 0.3);
+}
+
 .calendar-date.available {
   background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
   color: #22543d;
@@ -209,6 +217,10 @@
 
 .legend-color.available {
   background: #29ad53;
+}
+
+.legend-color.fully-booked {
+  background: linear-gradient(135deg, #feb2b2 0%, #fc8181 100%);
 }
 
 .legend-color.unavailable {

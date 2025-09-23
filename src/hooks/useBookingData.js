@@ -1,35 +1,123 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { formatDate } from '../utils/dateUtils';
+import { fetchAvailableDatesWithTimings, submitBookingRequest } from '../services/api';
+
+/**
+ * Mock data fallback when API is not available
+ */
+const getMockData = () => ({
+  success: true,
+  message: "Mock data loaded (API unavailable)",
+  timestamp: new Date().toISOString(),
+  data: {
+    summary: {
+      totalAvailableDates: 4,
+      fromDate: "2025-09-25",
+      totalBookedSlots: 2,
+      totalAvailableSlots: 50
+    },
+    availableDates: [
+      {
+        id: "mock-1",
+        date: "2025-09-25",
+        startTime: "09:00",
+        endTime: "17:00",
+        slotDuration: 30,
+        timings: "09:00 - 17:00",
+        totalSlots: 16,
+        bookedSlots: 2,
+        availableSlots: 14,
+        timeSlots: [
+          { time: "09:00", isBooked: false, bookingStatus: null },
+          { time: "09:30", isBooked: true, bookingStatus: "confirmed" },
+          { time: "10:00", isBooked: false, bookingStatus: null },
+          { time: "10:30", isBooked: false, bookingStatus: null },
+          { time: "11:00", isBooked: false, bookingStatus: null },
+          { time: "11:30", isBooked: false, bookingStatus: null },
+          { time: "12:00", isBooked: false, bookingStatus: null },
+          { time: "12:30", isBooked: false, bookingStatus: null },
+          { time: "13:00", isBooked: false, bookingStatus: null },
+          { time: "13:30", isBooked: false, bookingStatus: null },
+          { time: "14:00", isBooked: true, bookingStatus: "confirmed" },
+          { time: "14:30", isBooked: false, bookingStatus: null },
+          { time: "15:00", isBooked: false, bookingStatus: null },
+          { time: "15:30", isBooked: false, bookingStatus: null },
+          { time: "16:00", isBooked: false, bookingStatus: null },
+          { time: "16:30", isBooked: false, bookingStatus: null }
+        ]
+      },
+      {
+        id: "mock-2",
+        date: "2025-09-26",
+        startTime: "08:00",
+        endTime: "18:00",
+        slotDuration: 60,
+        timings: "08:00 - 18:00",
+        totalSlots: 10,
+        bookedSlots: 0,
+        availableSlots: 10,
+        timeSlots: [
+          { time: "08:00", isBooked: false, bookingStatus: null },
+          { time: "09:00", isBooked: false, bookingStatus: null },
+          { time: "10:00", isBooked: false, bookingStatus: null },
+          { time: "11:00", isBooked: false, bookingStatus: null },
+          { time: "12:00", isBooked: false, bookingStatus: null },
+          { time: "13:00", isBooked: false, bookingStatus: null },
+          { time: "14:00", isBooked: false, bookingStatus: null },
+          { time: "15:00", isBooked: false, bookingStatus: null },
+          { time: "16:00", isBooked: false, bookingStatus: null },
+          { time: "17:00", isBooked: false, bookingStatus: null }
+        ]
+      },
+      {
+        id: "mock-3",
+        date: "2025-09-30",
+        startTime: "10:00",
+        endTime: "16:00",
+        slotDuration: 15,
+        timings: "10:00 - 16:00",
+        totalSlots: 24,
+        bookedSlots: 24,
+        availableSlots: 0,
+        timeSlots: Array.from({ length: 24 }, (_, i) => {
+          const hour = Math.floor(i / 4) + 10;
+          const minute = (i % 4) * 15;
+          const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          return { time, isBooked: true, bookingStatus: "confirmed" };
+        })
+      },
+      {
+        id: "mock-4",
+        date: "2025-10-01",
+        startTime: "12:00",
+        endTime: "18:00",
+        slotDuration: 90,
+        timings: "12:00 - 18:00",
+        totalSlots: 4,
+        bookedSlots: 0,
+        availableSlots: 4,
+        timeSlots: [
+          { time: "12:00", isBooked: false, bookingStatus: null },
+          { time: "13:30", isBooked: false, bookingStatus: null },
+          { time: "15:00", isBooked: false, bookingStatus: null },
+          { time: "16:30", isBooked: false, bookingStatus: null }
+        ]
+      }
+    ]
+  }
+});
 
 /**
  * Custom hook for managing booking data and state
  */
 export const useBookingData = () => {
-  // Mock data for available dates (admin-configured)
-  const [availableDates] = useState(new Set([
-    '2025-09-25', '2025-09-26', '2025-09-30',
-    '2025-10-01', '2025-10-05', '2025-10-10',
-    '2025-10-15', '2025-10-20', '2025-10-25',
-    '2025-11-01', '2025-11-05', '2025-11-10',
-    '2025-11-15', '2025-11-20', '2025-11-25'
-  ]));
-
-  // Mock data for booked slots
-  const [bookedSlots] = useState(new Map([
-    ['2025-09-25', new Map([
-      ['14:00', { customer: 'John Doe', email: 'john@email.com', phone: '555-0101' }],
-      ['15:30', { customer: 'Jane Smith', email: 'jane@email.com', phone: '555-0102' }],
-      ['10:00', { customer: 'Bob Johnson', email: 'bob@email.com', phone: '555-0103' }]
-    ])],
-    ['2025-09-26', new Map([
-      ['09:00', { customer: 'Alice Brown', email: 'alice@email.com', phone: '555-0104' }],
-      ['16:00', { customer: 'Charlie Davis', email: 'charlie@email.com', phone: '555-0105' }]
-    ])],
-    ['2025-10-01', new Map([
-      ['11:30', { customer: 'Eva Wilson', email: 'eva@email.com', phone: '555-0106' }],
-      ['13:00', { customer: 'Frank Miller', email: 'frank@email.com', phone: '555-0107' }]
-    ])]
-  ]));
+  // API data states
+  const [availableDates, setAvailableDates] = useState(new Set());
+  const [datesData, setDatesData] = useState([]);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   // Current booking state
   const [selectedDate, setSelectedDate] = useState(null);
@@ -42,10 +130,66 @@ export const useBookingData = () => {
   });
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [bookingResponse, setBookingResponse] = useState(null);
 
   // Calendar navigation state
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  /**
+   * Fetch available dates from API
+   */
+  useEffect(() => {
+    const loadAvailableDates = async () => {
+      try {
+        setApiLoading(true);
+        setApiError(null);
+        setUsingMockData(false);
+        
+        console.log('🔄 Attempting to fetch data from API...');
+        const response = await fetchAvailableDatesWithTimings();
+        console.log('📡 API Response received:', response);
+        
+        const { availableDates: dates } = response.data;
+        
+        // Create set of available dates
+        const dateSet = new Set(dates.map(dateObj => dateObj.date));
+        setAvailableDates(dateSet);
+        setDatesData(dates);
+        
+        console.log('✅ Successfully loaded data from API');
+        console.log('📊 Loaded dates:', dates.map(d => d.date));
+        
+      } catch (error) {
+        console.error('❌ Failed to load available dates:', error);
+        console.error('🔍 Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+        
+        setApiError(error.message);
+        
+        // Fall back to mock data
+        console.log('🔄 Falling back to mock data...');
+        const mockResponse = getMockData();
+        const { availableDates: dates } = mockResponse.data;
+        
+        const dateSet = new Set(dates.map(dateObj => dateObj.date));
+        setAvailableDates(dateSet);
+        setDatesData(dates);
+        setUsingMockData(true);
+        
+        console.log('📋 Mock data loaded successfully');
+        console.log('📊 Mock dates:', dates.map(d => d.date));
+        
+      } finally {
+        setApiLoading(false);
+      }
+    };
+
+    loadAvailableDates();
+  }, []);
 
   /**
    * Check if a date is available for booking
@@ -53,7 +197,12 @@ export const useBookingData = () => {
    * @returns {boolean}
    */
   const isDateAvailable = (dateString) => {
-    return availableDates.has(dateString);
+    const dateData = datesData.find(d => d.date === dateString);
+    if (!dateData) return false;
+    
+    // Check if all slots are booked (date should appear red)
+    const allSlotsBooked = dateData.availableSlots === 0;
+    return !allSlotsBooked;
   };
 
   /**
@@ -63,7 +212,11 @@ export const useBookingData = () => {
    * @returns {boolean}
    */
   const isTimeSlotBooked = (dateString, timeString) => {
-    return bookedSlots.has(dateString) && bookedSlots.get(dateString).has(timeString);
+    const dateData = datesData.find(d => d.date === dateString);
+    if (!dateData) return true;
+    
+    const timeSlot = dateData.timeSlots.find(slot => slot.time === timeString);
+    return timeSlot ? timeSlot.isBooked : true;
   };
 
   /**
@@ -72,18 +225,21 @@ export const useBookingData = () => {
    * @returns {string[]}
    */
   const getAvailableTimeSlots = (dateString) => {
-    if (!isDateAvailable(dateString)) return [];
+    const dateData = datesData.find(d => d.date === dateString);
+    if (!dateData) return [];
     
-    const allSlots = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        if (!isTimeSlotBooked(dateString, timeString)) {
-          allSlots.push(timeString);
-        }
-      }
-    }
-    return allSlots;
+    return dateData.timeSlots
+      .filter(slot => !slot.isBooked)
+      .map(slot => slot.time);
+  };
+
+  /**
+   * Get date data with time slots
+   * @param {string} dateString 
+   * @returns {Object|null}
+   */
+  const getDateData = (dateString) => {
+    return datesData.find(d => d.date === dateString) || null;
   };
 
   /**
@@ -93,28 +249,80 @@ export const useBookingData = () => {
    */
   const submitBooking = async (bookingData) => {
     setIsLoading(true);
+    setApiError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const selectedDateString = formatDate(selectedDate);
       
-      // Add booking to mock data
-      const dateString = formatDate(selectedDate);
-      if (!bookedSlots.has(dateString)) {
-        bookedSlots.set(dateString, new Map());
-      }
-      bookedSlots.get(dateString).set(selectedTime, {
-        customer: bookingData.name,
+      const payload = {
+        username: bookingData.name,
         email: bookingData.email,
         phone: bookingData.phone,
-        notes: bookingData.notes,
-        bookedAt: new Date().toISOString()
-      });
+        notes: bookingData.notes || "",
+        date: selectedDateString,
+        time: selectedTime
+      };
+      
+      if (usingMockData) {
+        // Simulate API call for mock data
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log('📋 Mock booking submitted:', payload);
+        
+        // Create mock response similar to real API
+        const mockResponse = {
+          success: true,
+          message: "Booking created successfully",
+          timestamp: new Date().toISOString(),
+          data: {
+            id: "mock-" + Date.now(),
+            bookingReference: "SM" + new Date().getFullYear() + 
+                             String(new Date().getMonth() + 1).padStart(2, '0') + 
+                             String(new Date().getDate()).padStart(2, '0') + 
+                             String(Math.floor(Math.random() * 1000)).padStart(3, '0'),
+            date: selectedDateString,
+            timeSlot: selectedTime,
+            customer: {
+              name: bookingData.name,
+              email: bookingData.email,
+              phone: bookingData.phone,
+              notes: bookingData.notes || ""
+            },
+            status: "confirmed",
+            createdAt: new Date().toISOString()
+          }
+        };
+        
+        setBookingResponse(mockResponse);
+        toast.success(mockResponse.message);
+        
+      } else {
+        const response = await submitBookingRequest(payload);
+        console.log('✅ Real booking submitted:', payload);
+        console.log('📥 Booking response:', response);
+        
+        setBookingResponse(response);
+        toast.success(response.message);
+      }
+      
+      // Refresh the available dates after successful booking
+      try {
+        const response = await fetchAvailableDatesWithTimings();
+        const { availableDates: dates } = response.data;
+        
+        const dateSet = new Set(dates.map(dateObj => dateObj.date));
+        setAvailableDates(dateSet);
+        setDatesData(dates);
+        setUsingMockData(false);
+      } catch (refreshError) {
+        console.log('Failed to refresh data after booking, keeping current state');
+      }
       
       setShowConfirmation(true);
       return true;
     } catch (error) {
       console.error('Booking failed:', error);
+      setApiError(error.message);
+      toast.error(`Booking failed: ${error.message}`);
       return false;
     } finally {
       setIsLoading(false);
@@ -134,6 +342,7 @@ export const useBookingData = () => {
       notes: ''
     });
     setShowConfirmation(false);
+    setBookingResponse(null);
   };
 
   /**
@@ -171,7 +380,7 @@ export const useBookingData = () => {
   return {
     // Data
     availableDates,
-    bookedSlots,
+    datesData,
     
     // State
     selectedDate,
@@ -179,8 +388,12 @@ export const useBookingData = () => {
     customerData,
     showConfirmation,
     isLoading,
+    apiLoading,
+    apiError,
+    usingMockData,
     currentMonth,
     currentYear,
+    bookingResponse,
     
     // Setters
     setSelectedDate,
@@ -192,6 +405,7 @@ export const useBookingData = () => {
     isDateAvailable,
     isTimeSlotBooked,
     getAvailableTimeSlots,
+    getDateData,
     submitBooking,
     resetBooking,
     nextMonth,

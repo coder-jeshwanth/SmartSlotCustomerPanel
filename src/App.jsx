@@ -1,4 +1,5 @@
 import React from 'react';
+import { Toaster } from 'react-hot-toast';
 import { Calendar as CalendarIcon, Clock, User, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
 import Calendar from './components/Calendar';
 import TimeSlots from './components/TimeSlots';
@@ -15,14 +16,19 @@ function App() {
     customerData,
     showConfirmation,
     isLoading,
+    apiLoading,
+    apiError,
+    usingMockData,
     currentMonth,
     currentYear,
+    bookingResponse,
     setSelectedDate,
     setSelectedTime,
     setCustomerData,
     setShowConfirmation,
     isDateAvailable,
     getAvailableTimeSlots,
+    getDateData,
     submitBooking,
     resetBooking,
     nextMonth,
@@ -41,7 +47,8 @@ function App() {
   const handleSubmitBooking = async (bookingData) => {
     const success = await submitBooking(bookingData);
     if (!success) {
-      alert('Booking failed. Please try again.');
+      // Error is handled in the hook and stored in apiError
+      console.error('Booking submission failed');
     }
   };
 
@@ -52,6 +59,10 @@ function App() {
   const handleCloseConfirmation = () => {
     setShowConfirmation(false);
     resetBooking();
+  };
+
+  const handleRetryApiConnection = () => {
+    window.location.reload();
   };
 
   const renderCurrentStep = () => {
@@ -98,6 +109,7 @@ function App() {
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
             isDateAvailable={isDateAvailable}
+            getDateData={getDateData}
             onPrevMonth={prevMonth}
             onNextMonth={nextMonth}
           />
@@ -119,6 +131,7 @@ function App() {
               selectedTime={selectedTime}
               onTimeSelect={handleTimeSelect}
               getAvailableTimeSlots={getAvailableTimeSlots}
+              getDateData={getDateData}
             />
           </div>
         )}
@@ -128,6 +141,31 @@ function App() {
 
   return (
     <div className="app">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      
       <header className="app-header">
         <div className="header-content">
           <div className="header-title">
@@ -141,7 +179,34 @@ function App() {
 
       <main className="app-main">
         <div className="container">
-          {renderCurrentStep()}
+          {usingMockData && (
+            <div className="mock-data-warning">
+              <div className="warning-icon">⚠️</div>
+              <div className="warning-content">
+                <strong>Demo Mode Active</strong>
+                <p>
+                  Using demo data because the API connection failed. Your backend is running on 
+                  <code>http://localhost:5000</code>, but there might be a CORS or connection issue.
+                </p>
+                <button 
+                  className="retry-api-button"
+                  onClick={handleRetryApiConnection}
+                >
+                  🔄 Retry API Connection
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {apiLoading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <h2>Loading Available Dates...</h2>
+              <p>Please wait while we fetch the latest booking information.</p>
+            </div>
+          ) : (
+            renderCurrentStep()
+          )}
         </div>
       </main>
 
@@ -162,6 +227,7 @@ function App() {
         customerData={customerData}
         onClose={handleCloseConfirmation}
         show={showConfirmation}
+        bookingData={bookingResponse?.data}
       />
     </div>
   );
