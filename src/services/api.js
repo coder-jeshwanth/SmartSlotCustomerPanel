@@ -3,9 +3,12 @@
  */
 
 // Use the appropriate API URL based on the environment
+const BACKEND_URL = 'https://smart-slot-backend.vercel.app';
+const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+
 const API_BASE_URL = import.meta.env.DEV 
   ? '/api'  // Local development - will be handled by Vite proxy
-  : 'https://smart-slot-backend.vercel.app'; // Production
+  : CORS_PROXY + BACKEND_URL; // Production with CORS proxy
 
 /**
  * Fetch available dates with timings and booking status
@@ -13,13 +16,16 @@ const API_BASE_URL = import.meta.env.DEV
  */
 export const fetchAvailableDatesWithTimings = async () => {
   try {
-    console.log('🌐 Making API request to:', `${API_BASE_URL}/admin/dates/timings`);
+    const requestUrl = `${API_BASE_URL}/admin/dates/timings`;
+    console.log('🌐 Making API request to:', requestUrl);
     
-    const response = await fetch(`${API_BASE_URL}/admin/dates/timings`, {
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest', // Required by CORS-anywhere
+        'Origin': window.location.origin
       },
       mode: 'cors',
       cache: 'no-cache',
@@ -73,14 +79,17 @@ export const fetchAvailableDatesWithTimings = async () => {
  */
 export const submitBookingRequest = async (bookingData) => {
   try {
-    console.log('🌐 Making booking request to:', `${API_BASE_URL}/booking/simple`);
+    const requestUrl = `${API_BASE_URL}/booking/simple`;
+    console.log('🌐 Making booking request to:', requestUrl);
     console.log('📤 Booking payload:', bookingData);
     
-    const response = await fetch(`${API_BASE_URL}/booking/simple`, {
+    const response = await fetch(requestUrl, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest', // Required by CORS-anywhere
+        'Origin': window.location.origin
       },
       mode: 'cors',
       cache: 'no-cache',
