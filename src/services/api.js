@@ -4,11 +4,11 @@
 
 // Use the appropriate API URL based on the environment
 const BACKEND_URL = 'https://smart-slot-backend.vercel.app';
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+const ALLOWED_ORIGIN = 'https://smart-slot-gamma.vercel.app';
 
 const API_BASE_URL = import.meta.env.DEV 
   ? '/api'  // Local development - will be handled by Vite proxy
-  : CORS_PROXY + BACKEND_URL; // Production with CORS proxy
+  : BACKEND_URL; // Production
 
 /**
  * Fetch available dates with timings and booking status
@@ -24,8 +24,7 @@ export const fetchAvailableDatesWithTimings = async () => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest', // Required by CORS-anywhere
-        'Origin': window.location.origin
+        'Origin': ALLOWED_ORIGIN
       },
       mode: 'cors',
       cache: 'no-cache',
@@ -88,8 +87,7 @@ export const submitBookingRequest = async (bookingData) => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest', // Required by CORS-anywhere
-        'Origin': window.location.origin
+        'Origin': ALLOWED_ORIGIN
       },
       mode: 'cors',
       cache: 'no-cache',
