@@ -2,11 +2,10 @@
  * API service for SmartSlot booking system
  */
 
-const BACKEND_URL = 'https://smart-slot-backend.vercel.app';
-
-// Always use the full URL in production, use proxy only in development
+// Use proxy in development, full URL in production
 const isProduction = import.meta.env.PROD;
-const API_BASE_URL = BACKEND_URL;
+const BACKEND_URL = isProduction ? 'https://smart-slot-backend.vercel.app' : '';
+const API_BASE_URL = `${BACKEND_URL}/api`;
 
 /**
  * Fetch available dates with timings and booking status
@@ -74,7 +73,7 @@ export const fetchAvailableDatesWithTimings = async () => {
  */
 export const submitBookingRequest = async (bookingData) => {
   try {
-    const requestUrl = `${BACKEND_URL}/booking/simple`;
+    const requestUrl = `${API_BASE_URL}/booking/simple`;
     console.log('🌐 Making booking request to:', requestUrl);
     console.log('📤 Booking payload:', bookingData);
     
@@ -84,8 +83,6 @@ export const submitBookingRequest = async (bookingData) => {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      mode: 'cors',
-      cache: 'no-cache',
       body: JSON.stringify(bookingData),
     });
 

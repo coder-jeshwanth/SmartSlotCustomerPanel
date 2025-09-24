@@ -9,10 +9,13 @@ export default defineConfig({
       '/api': {
         target: 'https://smart-slot-backend.vercel.app',
         changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: true, // Enable secure HTTPS
+        ws: true,
+        rewrite: (path) => path, // Keep original path
         headers: {
-          'Origin': 'https://smart-slot-backend.vercel.app'
+          'Origin': 'https://smart-slot-backend.vercel.app', // Set proper origin
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
@@ -20,7 +23,9 @@ export default defineConfig({
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             console.log('Sending Request to the Target:', req.method, req.url);
-            proxyReq.setHeader('Origin', 'https://smart-slot-backend.vercel.app');
+            // Ensure proper headers for Vercel
+            proxyReq.setHeader('Accept', 'application/json');
+            proxyReq.setHeader('Content-Type', 'application/json');
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
