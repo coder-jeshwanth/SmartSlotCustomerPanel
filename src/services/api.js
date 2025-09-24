@@ -3,7 +3,9 @@
  */
 
 // Use proxy in development, full URL in production
-const isProduction = import.meta.env.PROD;
+    console.log('🌐 Making booking request to:', requestUrl);
+    console.log('📦 Final API payload:', payload); console.log('🌐 Making booking request to:', requestUrl);
+    console.log('📦 Final API payload:', payload); isProduction = import.meta.env.PROD;
 const BACKEND_URL = isProduction ? 'https://smart-slot-backend.vercel.app' : '';
 const API_BASE_URL = `${BACKEND_URL}/api`;
 
@@ -79,7 +81,7 @@ export const fetchAvailableDatesWithTimings = async () => {
  */
 export const submitBookingRequest = async (bookingData) => {
   try {
-    const requestUrl = 'https://smart-slot-backend.vercel.app/api/booking/simple';
+    const requestUrl = `${API_BASE_URL}/booking/simple`;
     
     // Log incoming data for debugging
     console.log('📝 Incoming booking data:', bookingData);
