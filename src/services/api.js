@@ -2,13 +2,11 @@
  * API service for SmartSlot booking system
  */
 
-// Use the appropriate API URL based on the environment
 const BACKEND_URL = 'https://smart-slot-backend.vercel.app';
-const ALLOWED_ORIGIN = 'https://smart-slot-backend.vercel.app';
 
-const API_BASE_URL = import.meta.env.DEV 
-  ? '/api'  // Local development - will be handled by Vite proxy
-  : BACKEND_URL; // Production
+// Always use the full URL in production, use proxy only in development
+const isProduction = import.meta.env.PROD;
+const API_BASE_URL = BACKEND_URL;
 
 /**
  * Fetch available dates with timings and booking status
@@ -23,12 +21,10 @@ export const fetchAvailableDatesWithTimings = async () => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Origin': ALLOWED_ORIGIN
+        'Content-Type': 'application/json'
       },
       mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
+      cache: 'no-cache'
     });
 
     console.log('📡 Response received:', {
@@ -78,7 +74,7 @@ export const fetchAvailableDatesWithTimings = async () => {
  */
 export const submitBookingRequest = async (bookingData) => {
   try {
-    const requestUrl = `${API_BASE_URL}/booking/simple`;
+    const requestUrl = `${BACKEND_URL}/booking/simple`;
     console.log('🌐 Making booking request to:', requestUrl);
     console.log('📤 Booking payload:', bookingData);
     
@@ -86,12 +82,10 @@ export const submitBookingRequest = async (bookingData) => {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Origin': ALLOWED_ORIGIN
+        'Content-Type': 'application/json'
       },
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'omit',
       body: JSON.stringify(bookingData),
     });
 
@@ -120,7 +114,7 @@ export const submitBookingRequest = async (bookingData) => {
     // Provide more specific error messages
     if (error.name === 'TypeError') {
       if (error.message === 'Failed to fetch') {
-        throw new Error('Cannot connect to server. Please ensure your backend server is running on http://localhost:5000.');
+        throw new Error('Cannot connect to server. Please ensure the backend server is available at https://smart-slot-backend.vercel.app');
       } else if (error.message.includes('NetworkError')) {
         throw new Error('Network error occurred. Check your internet connection and server status.');
       }
@@ -128,7 +122,7 @@ export const submitBookingRequest = async (bookingData) => {
     
     // Handle proxy/network errors
     if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
-      throw new Error('Backend server connection failed. Please start your backend server on http://localhost:5000 and try again.');
+      throw new Error('Backend server connection failed. Please check if the server at https://smart-slot-backend.vercel.app is functioning properly.');
     }
     
     throw error;
