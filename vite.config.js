@@ -12,7 +12,7 @@ export default defineConfig({
         secure: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         headers: {
-          'Origin': 'https://smart-slot-gamma.vercel.app'
+          'Origin': 'https://smart-slot-backend.vercel.app'
         },
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
@@ -20,7 +20,7 @@ export default defineConfig({
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             console.log('Sending Request to the Target:', req.method, req.url);
-            proxyReq.setHeader('Origin', 'https://smart-slot-gamma.vercel.app');
+            proxyReq.setHeader('Origin', 'https://smart-slot-backend.vercel.app');
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);

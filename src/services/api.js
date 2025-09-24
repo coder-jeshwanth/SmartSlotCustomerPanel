@@ -4,7 +4,7 @@
 
 // Use the appropriate API URL based on the environment
 const BACKEND_URL = 'https://smart-slot-backend.vercel.app';
-const ALLOWED_ORIGIN = 'https://smart-slot-gamma.vercel.app';
+const ALLOWED_ORIGIN = 'https://smart-slot-backend.vercel.app';
 
 const API_BASE_URL = import.meta.env.DEV 
   ? '/api'  // Local development - will be handled by Vite proxy
