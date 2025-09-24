@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatTimeDisplay } from '../utils/dateUtils';
+import { formatTimeDisplay, formatDate } from '../utils/dateUtils';
 import './TimeSlots.css';
 
 const TimeSlots = ({ 
@@ -19,7 +19,8 @@ const TimeSlots = ({
     );
   }
 
-  const dateString = selectedDate.toISOString().split('T')[0];
+  // Use our fixed formatDate function to ensure timezone consistency
+  const dateString = formatDate(selectedDate);
   const availableSlots = getAvailableTimeSlots(dateString);
   const dateData = getDateData(dateString);
 

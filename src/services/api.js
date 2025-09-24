@@ -109,7 +109,11 @@ export const submitBookingRequest = async (bookingData) => {
       // Data needs to be formatted (original bookingData format)
       let formattedDate;
       if (bookingData.selectedDate instanceof Date) {
-        formattedDate = bookingData.selectedDate.toISOString().split('T')[0];
+        // Use local timezone instead of UTC to prevent date shift
+        const year = bookingData.selectedDate.getFullYear();
+        const month = String(bookingData.selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(bookingData.selectedDate.getDate()).padStart(2, '0');
+        formattedDate = `${year}-${month}-${day}`;
       } else if (typeof bookingData.selectedDate === 'string') {
         formattedDate = bookingData.selectedDate;
       } else {
