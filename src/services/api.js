@@ -2,10 +2,7 @@
  * API service for SmartSlot booking system
  */
 
-// Use proxy in development, full URL in production
-    console.log('🌐 Making booking request to:', requestUrl);
-    console.log('📦 Final API payload:', payload); console.log('🌐 Making booking request to:', requestUrl);
-    console.log('📦 Final API payload:', payload); isProduction = import.meta.env.PROD;
+const isProduction = import.meta.env.PROD;
 const BACKEND_URL = isProduction ? 'https://smart-slot-backend.vercel.app' : '';
 const API_BASE_URL = `${BACKEND_URL}/api`;
 
