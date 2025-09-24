@@ -13,7 +13,7 @@ const API_BASE_URL = `${BACKEND_URL}/api`;
 export const fetchAvailableDatesWithTimings = async () => {
   try {
     const requestUrl = `${API_BASE_URL}/admin/dates/timings`;
-    console.log(' Making API request to:', requestUrl);
+    console.log('🌐 Making API request to:', requestUrl);
     
     const response = await fetch(requestUrl, {
       method: 'GET',
@@ -25,7 +25,7 @@ export const fetchAvailableDatesWithTimings = async () => {
       cache: 'no-cache'
     });
 
-    console.log(' Response received:', {
+    console.log('📡 Response received:', {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
@@ -37,7 +37,7 @@ export const fetchAvailableDatesWithTimings = async () => {
     }
 
     const data = await response.json();
-    console.log(' Data parsed successfully:', data);
+    console.log('✅ Data parsed successfully:', data);
     
     if (!data.success) {
       throw new Error(data.message || 'Failed to fetch available dates');
@@ -45,7 +45,7 @@ export const fetchAvailableDatesWithTimings = async () => {
 
     return data;
   } catch (error) {
-    console.error(' API Error:', error);
+    console.error('❌ API Error:', error);
     
     // Provide more specific error messages
     if (error.name === 'TypeError') {
@@ -81,7 +81,7 @@ export const submitBookingRequest = async (bookingData) => {
     const requestUrl = `${API_BASE_URL}/booking/simple`;
     
     // Log incoming data for debugging
-    console.log(' Incoming booking data:', bookingData);
+    console.log('📝 Incoming booking data:', bookingData);
     
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -113,7 +113,7 @@ export const submitBookingRequest = async (bookingData) => {
       } else if (typeof bookingData.selectedDate === 'string') {
         formattedDate = bookingData.selectedDate;
       } else {
-        console.error(' Invalid date format:', bookingData.selectedDate);
+        console.error('❌ Invalid date format:', bookingData.selectedDate);
         throw new Error('Invalid date format. Expected Date object or YYYY-MM-DD string');
       }
       
@@ -127,18 +127,8 @@ export const submitBookingRequest = async (bookingData) => {
       };
     }
     
-    // Ensure the final payload matches the expected structure exactly
-    const finalPayload = {
-      username: payload.username,
-      email: payload.email,
-      phone: payload.phone,
-      notes: payload.notes || '',
-      date: payload.date,
-      time: payload.time
-    };
-    
-    console.log(' Making booking request to:', requestUrl);
-    console.log(' Final API payload:', finalPayload);
+    console.log('🌐 Making booking request to:', requestUrl);
+    console.log('� Final API payload:', payload);
     
     const response = await fetch(requestUrl, {
       method: 'POST',
@@ -146,10 +136,10 @@ export const submitBookingRequest = async (bookingData) => {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(finalPayload),
+      body: JSON.stringify(payload),
     });
 
-    console.log(' Booking response received:', {
+    console.log('📡 Booking response received:', {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
@@ -160,12 +150,12 @@ export const submitBookingRequest = async (bookingData) => {
       // Get the error response body for more details
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.message || `HTTP error! status: ${response.status} - ${response.statusText}`;
-      console.error(' Error response from server:', errorData);
+      console.error('⚠️ Error response from server:', errorData);
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    console.log(' Booking data parsed successfully:', data);
+    console.log('✅ Booking data parsed successfully:', data);
     
     if (!data.success) {
       throw new Error(data.message || 'Failed to submit booking');
@@ -173,7 +163,7 @@ export const submitBookingRequest = async (bookingData) => {
 
     return data;
   } catch (error) {
-    console.error(' Booking API Error:', error);
+    console.error('❌ Booking API Error:', error);
     
     // Provide more specific error messages
     if (error.name === 'TypeError') {
