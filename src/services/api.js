@@ -68,14 +68,45 @@ export const fetchAvailableDatesWithTimings = async () => {
 
 /**
  * Submit a booking request
- * @param {Object} bookingData - The booking information
+ * @param {Object} bookingData - The booking information containing customer details
+ * @param {string} bookingData.name - Customer's full name
+ * @param {string} bookingData.email - Customer's email address
+ * @param {string} bookingData.phone - Customer's phone number (10 digits)
+ * @param {string} bookingData.notes - Additional notes (optional)
+ * @param {Date} bookingData.selectedDate - Selected booking date
+ * @param {string} bookingData.selectedTime - Selected time slot (HH:mm format)
  * @returns {Promise<Object>} API response
  */
 export const submitBookingRequest = async (bookingData) => {
   try {
-    const requestUrl = `${API_BASE_URL}/booking/simple`;
+    const requestUrl = 'https://smart-slot-backend.vercel.app/api/booking/simple';
+    
+    // Log incoming data for debugging
+    console.log('📝 Incoming booking data:', bookingData);
+    
+    // Format date to YYYY-MM-DD
+    let formattedDate;
+    if (bookingData.selectedDate instanceof Date) {
+      formattedDate = bookingData.selectedDate.toISOString().split('T')[0];
+    } else if (typeof bookingData.selectedDate === 'string') {
+      formattedDate = bookingData.selectedDate;
+    } else {
+      console.error('❌ Invalid date format:', bookingData.selectedDate);
+      throw new Error('Invalid date format. Expected Date object or YYYY-MM-DD string');
+    }
+    
+    // Prepare the payload in the required format
+    const payload = {
+      username: bookingData.name,
+      email: bookingData.email,
+      phone: bookingData.phone,
+      notes: bookingData.notes || '',
+      date: formattedDate,
+      time: bookingData.selectedTime
+    };
+    
     console.log('🌐 Making booking request to:', requestUrl);
-    console.log('📤 Booking payload:', bookingData);
+    console.log('� Final API payload:', payload);
     
     const response = await fetch(requestUrl, {
       method: 'POST',
@@ -83,7 +114,7 @@ export const submitBookingRequest = async (bookingData) => {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(bookingData),
+      body: JSON.stringify(payload),
     });
 
     console.log('📡 Booking response received:', {
